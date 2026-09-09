@@ -196,10 +196,17 @@ Do not turn these into implementation assumptions.
 
 ### P0 — Foundation
 
-Status: Not started
+Status: In Progress
 
 Completed:
-- None
+- Task 2: Establish Shared Domain Types and Enums (`@eventmgmt/shared`)
+  - Enums: `UserRole` (STUDENT, ORGANIZER, ADMIN), `EventStatus` (DRAFT, PUBLISHED, COMPLETED, CANCELLED), `RegistrationStatus` (ACTIVE, CANCELLED)
+  - Public domain types: `User`, `Event`, `Registration` (safe public shapes omitting sensitive credentials like passwordHash/refreshToken)
+  - Relationship and summary shapes: `UserSummary`, `EventSummary`, `EventWithOrganizer`, `RegistrationWithEvent`, `RegistrationWithStudent`
+  - Input contracts: `CreateEventInput`, `UpdateEventInput`, `CreateRegistrationInput` (omitting server-owned fields)
+  - API response and error contracts: `ApiError`, `ApiErrorPayload`, `ApiErrorResponse`, `ApiSuccessResponse`, `ApiResponse<T>`, `ApiErrorCode`, plus endpoint response interfaces aligned with `06 — API Contracts`
+  - Package exports: Configured `packages/shared/src/index.ts` barrel export and `packages/shared/package.json` with ESM subpath exports
+  - Validation: Clean compilation with strict TypeScript `tsc` without any Prisma coupling
 
 ### P1 — Database
 
