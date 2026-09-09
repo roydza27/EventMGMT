@@ -8,11 +8,11 @@ Last updated: 2026-09-09
 
 ## Current State
 
-Phase: P1 — Database
+Phase: P0 / P1 (Foundation & Database)
 
-Current task: Task 1 completed (Prisma Database Foundation established)
+Current task: Task 3 completed (Backend Application Foundation established)
 
-Overall status: Database foundation and core constraints implemented and verified
+Overall status: Backend application infrastructure, database foundation, and shared domain contracts implemented and verified
 
 
 ---
@@ -207,6 +207,21 @@ Completed:
   - API response and error contracts: `ApiError`, `ApiErrorPayload`, `ApiErrorResponse`, `ApiSuccessResponse`, `ApiResponse<T>`, `ApiErrorCode`, plus endpoint response interfaces aligned with `06 — API Contracts`
   - Package exports: Configured `packages/shared/src/index.ts` barrel export and `packages/shared/package.json` with ESM subpath exports
   - Validation: Clean compilation with strict TypeScript `tsc` without any Prisma coupling
+- Task 3: Establish Backend Application Foundation (`apps/api`)
+  - Configuration: Centralized `apps/api/src/config/env.ts` with Zod schema and dotenv loading (fail-fast validation)
+  - Logging: Structured logger in `apps/api/src/lib/logger.ts` supporting info/warn/error/debug with sensitive credential/token redaction
+  - Error Model: AppError and subclasses (NotFoundError, UnauthorizedError, ForbiddenError, ConflictError, ValidationError) with standard API contract JSON response formatting in `apps/api/src/middleware/error.middleware.ts`
+  - Request Validation: Reusable Zod validation middleware `apps/api/src/middleware/validation.middleware.ts` supporting body, query, and params validation
+  - Security & Authentication Utils: Argon2id password hashing/verification (`apps/api/src/lib/password.ts`), JWT access/refresh token sign and verify (`apps/api/src/lib/jwt.ts`)
+  - Middleware Boundaries: Token authentication boundary `authenticate` in `apps/api/src/middleware/auth.middleware.ts`, role guard `requireRole` in `apps/api/src/middleware/role.middleware.ts`
+  - Bootstrap: Express application construction in `apps/api/src/app.ts` separated from HTTP listener in `apps/api/src/server.ts`, with CORS, Helmet, request logging, `/health` endpoint, and 404 handler
+  - Validation: Automated test suite `apps/api/tests/infrastructure.test.ts` (8/8 tests passing covering health, 404, error handler, validation, password, JWT, auth middleware, and role guard)
+  - Strict Isolation: Zero modifications to `prisma/**` and `packages/shared/**`
+- Task 4: Establish API Documentation and Test Scaffolding
+  - API Specification: Comprehensive REST API reference in `docs/api.md` covering `/api/auth`, `/api/events`, `/api/registrations`, `/api/participants`, response envelopes, HTTP status codes, standard error codes, authorization matrix, and explicit TBD boundaries.
+  - Test Scaffolding & Documentation: Established backend test suite architecture in `apps/api/tests/README.md` and module-specific test documentation in `apps/api/tests/auth/README.md`, `apps/api/tests/events/README.md`, `apps/api/tests/registrations/README.md`, and `apps/api/tests/participants/README.md`.
+  - Developer & Root Docs: Updated `README.md` with system overview, architecture links, and quick execution commands; established `docs/development.md` documenting testing layers, workflow rules, and integration test prerequisites.
+  - Strict Isolation: Zero changes to `prisma/**`, `packages/shared/**`, `apps/api/src/config/**`, `apps/api/src/lib/**`, `apps/api/src/middleware/**`, `apps/api/src/app.ts`, `apps/api/src/server.ts`, or business modules.
 
 ### P1 — Database
 
