@@ -234,17 +234,27 @@ Completed:
 - P1.5 Model Event entity (DRAFT, PUBLISHED, COMPLETED, CANCELLED, organizer relation, temporal rules)
 - P1.6 Model Registration entity (ACTIVE, CANCELLED, user and event relations)
 - P1.7 Partial unique index on (userId, eventId) WHERE status = 'ACTIVE' for active registration uniqueness with historical cancellation support
+- P1.4 Model refresh-token persistence (RefreshToken entity with tokenHash, expiration, revocation, replacement tracking, and cascade deletion)
+- Prisma migration (20260909101557_add_refresh_token_persistence)
 - Check constraints for startTime < endTime, registrationDeadline < startTime, and capacity > 0
 - prisma/seed.ts with deterministic test accounts, events, and registrations
 - tests/db-integrity.test.ts with 9 passing automated integrity tests
 
-
 ### P2 — Authentication & RBAC
 
-Status: Not started
+Status: Completed
 
 Completed:
-- None
+- P2.1 Implement password hashing service with Argon2id (`apps/api/src/lib/password.ts`)
+- P2.2 Implement JWT access-token service (`apps/api/src/lib/jwt.ts`)
+- P2.3 Implement refresh-token service with database persistence, rotation, expiration, and replay detection (`apps/api/src/modules/auth/auth.service.ts`)
+- P2.4 Implement authentication context middleware (`apps/api/src/middleware/auth.middleware.ts`)
+- P2.5 Implement role guard middleware (`apps/api/src/middleware/role.middleware.ts`)
+- P2.6 Implement login endpoint `POST /api/auth/login` (`apps/api/src/modules/auth/auth.controller.ts`, `auth.routes.ts`)
+- P2.7 Implement refresh endpoint `POST /api/auth/refresh` with rotation & replay protection
+- P2.8 Implement logout endpoint `POST /api/auth/logout` with session invalidation
+- P2.9 Implement current-user endpoint `GET /api/auth/me` with server-derived identity
+- P2.10 Add comprehensive authentication & RBAC integration tests (`apps/api/tests/auth/auth.test.ts`, 17/17 passing)
 
 ### P3 — Event Management
 

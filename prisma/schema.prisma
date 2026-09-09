@@ -37,6 +37,7 @@ model User {
 
   organizedEvents Event[]        @relation("EventOrganizer")
   registrations   Registration[]
+  refreshTokens   RefreshToken[]
 
   @@index([email])
   @@index([role])
@@ -84,4 +85,19 @@ model Registration {
   @@index([userId])
   @@index([eventId])
   @@index([status])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([tokenHash])
 }
