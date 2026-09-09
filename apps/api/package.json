@@ -6,7 +6,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "tsx tests/infrastructure.test.ts"
+    "test": "tsx tests/infrastructure.test.ts && tsx tests/events/event-management.test.ts",
+    "test:infra": "tsx tests/infrastructure.test.ts",
+    "test:events": "tsx tests/events/event-management.test.ts"
   },
   "dependencies": {
     "@eventmgmt/shared": "workspace:*",

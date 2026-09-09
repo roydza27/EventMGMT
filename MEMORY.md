@@ -8,11 +8,11 @@ Last updated: 2026-09-09
 
 ## Current State
 
-Phase: P0 / P1 (Foundation & Database)
+Phase: P3 — Event Management
 
-Current task: Task 3 completed (Backend Application Foundation established)
+Current task: Task 6 completed (Event Management implemented and verified)
 
-Overall status: Backend application infrastructure, database foundation, and shared domain contracts implemented and verified
+Overall status: Event creation, ownership enforcement, lifecycle transitions (publish/cancel), validation, and visibility rules implemented with 19/19 tests passing
 
 
 ---
@@ -248,10 +248,22 @@ Completed:
 
 ### P3 — Event Management
 
-Status: Not started
+Status: In Progress
 
 Completed:
-- None
+- Task 6: Implement Event Management (`apps/api/src/modules/events/`)
+  - Schema validation (`event.schema.ts`): Zod schemas enforcing required fields, temporal invariants (`startTime < endTime`, `registrationDeadline < startTime`), and positive capacity.
+  - Event Service (`event.service.ts`):
+    - `createEvent`: Enforces `DRAFT` initial state, derives `organizerId` from authenticated session.
+    - `getEventById`: Conceals private `DRAFT` events from students and non-owner organizers (returns 404); allows owner and admin.
+    - `listEvents`: Returns only `PUBLISHED` events to students and unauthenticated users; organizers see published + owned drafts; admins see all.
+    - `updateEvent`: Server-side ownership check (only owner organizer or admin can mutate); revalidates temporal rules; preserves lifecycle status.
+    - `publishEvent`: Transitions `DRAFT -> PUBLISHED`; rejects invalid transitions on already published, cancelled, or completed events with 409 Conflict.
+    - `cancelEvent`: Transitions to `CANCELLED`; rejects cancelling completed or already cancelled events with 409 Conflict.
+  - Controller & Routes (`event.controller.ts`, `event.routes.ts`): Mounted under `/api/events` in `app.ts` using existing `authenticate` and `requireRole` boundaries.
+  - Integration Tests (`apps/api/tests/events/event-management.test.ts`): 19/19 tests passing covering creation, ownership enforcement, lifecycle transitions, validation rules, and visibility.
+  - Task Isolation: Zero modifications to authentication implementation (Task 5), password utilities, JWT logic, or unrelated Prisma schemas.
+
 
 ### P4 — Event Discovery
 
