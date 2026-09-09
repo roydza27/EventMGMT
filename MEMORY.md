@@ -8,11 +8,12 @@ Last updated: 2026-09-09
 
 ## Current State
 
-Phase: P0 — Foundation
+Phase: P1 — Database
 
-Current task: Not started
+Current task: Task 1 completed (Prisma Database Foundation established)
 
-Overall status: Requirements finalized enough for implementation
+Overall status: Database foundation and core constraints implemented and verified
+
 
 ---
 
@@ -202,10 +203,19 @@ Completed:
 
 ### P1 — Database
 
-Status: Not started
+Status: In Progress
 
 Completed:
-- None
+- P1.1 Initialize PostgreSQL connection & Prisma datasource
+- P1.2 Create initial Prisma migration (20260909095016_init_database_foundation)
+- P1.3 Model User entity (STUDENT, ORGANIZER, ADMIN, unique email, password hash, college)
+- P1.5 Model Event entity (DRAFT, PUBLISHED, COMPLETED, CANCELLED, organizer relation, temporal rules)
+- P1.6 Model Registration entity (ACTIVE, CANCELLED, user and event relations)
+- P1.7 Partial unique index on (userId, eventId) WHERE status = 'ACTIVE' for active registration uniqueness with historical cancellation support
+- Check constraints for startTime < endTime, registrationDeadline < startTime, and capacity > 0
+- prisma/seed.ts with deterministic test accounts, events, and registrations
+- tests/db-integrity.test.ts with 9 passing automated integrity tests
+
 
 ### P2 — Authentication & RBAC
 

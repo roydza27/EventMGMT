@@ -1,0 +1,87 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  STUDENT
+  ORGANIZER
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  passwordHash String
+  college      String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organizedEvents Event[]        @relation("EventOrganizer")
+  registrations   Registration[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Event {
+  id                   String      @id @default(uuid()) @db.Uuid
+  organizerId          String      @db.Uuid
+  organizer            User        @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Restrict)
+  title                String
+  description          String      @db.Text
+  category             String
+  startTime            DateTime
+  endTime              DateTime
+  venue                String
+  capacity             Int?
+  registrationDeadline DateTime
+  eligibility          String      @db.Text
+  prize                String?     @db.Text
+  status               EventStatus @default(DRAFT)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  registrations Registration[]
+
+  @@index([organizerId])
+  @@index([status])
+  @@index([startTime])
+  @@index([category])
+}
+
+model Registration {
+  id           String             @id @default(uuid()) @db.Uuid
+  userId       String             @db.Uuid
+  user         User               @relation(fields: [userId], references: [id], onDelete: Restrict)
+  eventId      String             @db.Uuid
+  event        Event              @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  status       RegistrationStatus @default(ACTIVE)
+  registeredAt DateTime           @default(now())
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  // Note: Partial unique index (userId, eventId) WHERE status = 'ACTIVE'
+  // is applied directly in PostgreSQL via the migration SQL.
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
+}
