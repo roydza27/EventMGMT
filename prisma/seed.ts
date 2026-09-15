@@ -3,7 +3,7 @@ import { PrismaClient, UserRole, EventStatus, RegistrationStatus } from '@prisma
 const prisma = new PrismaClient();
 
 // Development-only password hash for seeded accounts (password: "Password123!")
-const DEV_PASSWORD_HASH = '$argon2id$v=19$m=65536,t=3,p=4$devseedhash$placeholderhashforlocaldevonly';
+const DEV_PASSWORD_HASH = '$argon2id$v=19$m=65536,p=4,t=3$R3ZM2ST1U0wV1mVNYbCkuA$HSEMKjtiPi3M5F9h/JLDCrcx2J0CsyZgUEuHuEoz8OI';
 
 async function main() {
   console.log('--- Seeding Database Foundation ---');

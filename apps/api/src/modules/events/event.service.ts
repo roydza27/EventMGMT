@@ -1,6 +1,32 @@
 import { prisma } from '../../config/database.js';
-import { EventStatus, CreateEventInput, UpdateEventInput, AuthenticatedUserContext } from './event.types.js';
+import {
+  EventStatus,
+  CreateEventInput,
+  UpdateEventInput,
+  AuthenticatedUserContext,
+  EventFilterQuery,
+  EventAvailability,
+} from './event.types.js';
 import { NotFoundError, ForbiddenError, ConflictError, ValidationError } from '../../middleware/error.middleware.js';
+
+export function calculateAvailability(
+  event: { status: EventStatus | string; registrationDeadline: Date | string; capacity: number | null },
+  activeCount: number
+): EventAvailability {
+  if (event.status === EventStatus.CANCELLED) {
+    return 'CANCELLED';
+  }
+  if (event.status === EventStatus.COMPLETED) {
+    return 'COMPLETED';
+  }
+  if (new Date() >= new Date(event.registrationDeadline)) {
+    return 'REGISTRATION_CLOSED';
+  }
+  if (event.capacity !== null && activeCount >= event.capacity) {
+    return 'FULL';
+  }
+  return 'OPEN';
+}
 
 export const eventService = {
   async createEvent(input: CreateEventInput, organizerId: string) {
@@ -52,6 +78,13 @@ export const eventService = {
             college: true,
           },
         },
+        _count: {
+          select: {
+            registrations: {
+              where: { status: 'ACTIVE' },
+            },
+          },
+        },
       },
     });
 
@@ -69,49 +102,99 @@ export const eventService = {
       }
     }
 
-    return event;
+    const activeRegistrationCount = event._count?.registrations ?? 0;
+    const availability = calculateAvailability(event, activeRegistrationCount);
+
+    const { _count, ...eventData } = event;
+    return {
+      ...eventData,
+      activeRegistrationCount,
+      availability,
+    };
   },
 
-  async listEvents(user?: AuthenticatedUserContext) {
+  async listEvents(filter?: EventFilterQuery, user?: AuthenticatedUserContext) {
+    const where: any = {};
+
+    // 1. Base visibility rules according to authenticated role
     if (user?.role === 'ADMIN') {
-      return prisma.event.findMany({
-        orderBy: { startTime: 'asc' },
-        include: {
-          organizer: {
-            select: { id: true, name: true, email: true, college: true },
-          },
-        },
+      if (filter?.status) {
+        where.status = filter.status;
+      }
+    } else if (user?.role === 'ORGANIZER') {
+      if (filter?.status) {
+        if (filter.status === EventStatus.DRAFT) {
+          where.status = EventStatus.DRAFT;
+          where.organizerId = user.userId;
+        } else {
+          where.status = filter.status;
+        }
+      } else {
+        where.OR = [
+          { status: { not: EventStatus.DRAFT } },
+          { organizerId: user.userId },
+        ];
+      }
+    } else {
+      // Student or public catalog: strictly PUBLISHED events
+      where.status = EventStatus.PUBLISHED;
+    }
+
+    // 2. Search query filter across title, description, and venue
+    if (filter?.search) {
+      const searchPattern = filter.search;
+      where.AND = where.AND || [];
+      where.AND.push({
+        OR: [
+          { title: { contains: searchPattern, mode: 'insensitive' } },
+          { description: { contains: searchPattern, mode: 'insensitive' } },
+          { venue: { contains: searchPattern, mode: 'insensitive' } },
+        ],
       });
     }
 
-    if (user?.role === 'ORGANIZER') {
-      return prisma.event.findMany({
-        where: {
-          OR: [
-            { status: { not: EventStatus.DRAFT } },
-            { organizerId: user.userId },
-          ],
-        },
-        orderBy: { startTime: 'asc' },
-        include: {
-          organizer: {
-            select: { id: true, name: true, email: true, college: true },
-          },
-        },
-      });
+    // 3. Category filter
+    if (filter?.category) {
+      where.category = { equals: filter.category, mode: 'insensitive' };
     }
 
-    // Student or public: only PUBLISHED events
-    return prisma.event.findMany({
-      where: {
-        status: EventStatus.PUBLISHED,
-      },
+    // 4. Date range filter
+    if (filter?.from || filter?.to) {
+      where.startTime = {};
+      if (filter.from) {
+        where.startTime.gte = new Date(filter.from);
+      }
+      if (filter.to) {
+        where.startTime.lte = new Date(filter.to);
+      }
+    }
+
+    const events = await prisma.event.findMany({
+      where,
       orderBy: { startTime: 'asc' },
       include: {
         organizer: {
           select: { id: true, name: true, email: true, college: true },
         },
+        _count: {
+          select: {
+            registrations: {
+              where: { status: 'ACTIVE' },
+            },
+          },
+        },
       },
+    });
+
+    return events.map((event) => {
+      const activeRegistrationCount = event._count?.registrations ?? 0;
+      const availability = calculateAvailability(event, activeRegistrationCount);
+      const { _count, ...eventData } = event;
+      return {
+        ...eventData,
+        activeRegistrationCount,
+        availability,
+      };
     });
   },
 

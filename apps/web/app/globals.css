@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
+  --font-mono: var(--font-mono), monospace;
+
+  --shadow-surface-dark: var(--shadow-elevation);
+  --shadow-glow: 0 0 25px -4px var(--accent-soft);
+  --shadow-glow-sm: 0 0 15px -3px var(--accent-soft);
+}
+
+:root {
+  --background: #fbfaf8;
+  --surface: #ffffff;
+  --surface-elevated: #f4f2ec;
+  --surface-sunken: #edebe4;
+  --foreground: #121316;
+  --muted: #5e6473;
+  --border: rgba(18, 19, 22, 0.09);
+  --border-strong: rgba(18, 19, 22, 0.18);
+  
+  --accent: #d34c1b;
+  --accent-hover: #b83d12;
+  --accent-soft: rgba(211, 76, 27, 0.12);
+  --accent-foreground: #ffffff;
+  
+  --success: #0b8a5d;
+  --success-soft: rgba(11, 138, 93, 0.1);
+  --warning: #c97708;
+  --warning-soft: rgba(201, 119, 8, 0.1);
+  --danger: #d9383a;
+  --danger-soft: rgba(217, 56, 58, 0.1);
+
+  --shadow-elevation: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --background: #090a0d;
+  --surface: #11141b;
+  --surface-elevated: #181d27;
+  --surface-sunken: #0b0d12;
+  --foreground: #f2f4f8;
+  --muted: #8a92a5;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  
+  --accent: #e45826;
+  --accent-hover: #f16837;
+  --accent-soft: rgba(228, 88, 38, 0.18);
+  --accent-foreground: #ffffff;
+  
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.15);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.15);
+
+  --shadow-elevation: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.bg-subtle-grid {
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.font-display {
+  font-family: var(--font-serif), Georgia, serif;
+}

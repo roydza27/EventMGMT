@@ -6,6 +6,7 @@ import { logger } from './lib/logger.js';
 import { errorHandler, NotFoundError } from './middleware/error.middleware.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { eventRoutes } from './modules/events/event.routes.js';
+import { registrationRoutes } from './modules/registrations/registration.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -47,6 +48,7 @@ export function createApp(): Express {
   // 5. API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/events', eventRoutes);
+  app.use('/api/registrations', registrationRoutes);
 
   // 6. 404 handler for unknown routes
   app.use((req: Request, res: Response, next: NextFunction) => {

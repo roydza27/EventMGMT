@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { eventService } from './event.service.js';
+import { EventFilterQuery } from './event.types.js';
 
 export const eventController = {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -23,7 +24,7 @@ export const eventController = {
 
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const events = await eventService.listEvents(req.user);
+      const events = await eventService.listEvents(req.query as EventFilterQuery, req.user);
       res.status(200).json({ events });
     } catch (error) {
       next(error);

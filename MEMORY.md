@@ -8,11 +8,11 @@ Last updated: 2026-09-09
 
 ## Current State
 
-Phase: P3 — Event Management
+Phase: P5 & P6 — Registration and Frontend
 
-Current task: Task 6 completed (Event Management implemented and verified)
+Current task: Event Registration API & Frontend Login / Registration Pages implemented and verified
 
-Overall status: Event creation, ownership enforcement, lifecycle transitions (publish/cancel), validation, and visibility rules implemented with 19/19 tests passing
+Overall status: Event discovery, event registration API, and frontend authentication & registration interfaces completed. 73 total backend tests passing across all test suites (infrastructure: 8, auth: 17, event management: 19, event discovery: 17, registration: 12). Live frontend verified with zero TypeScript errors.
 
 
 ---
@@ -277,24 +277,57 @@ Completed:
 
 ### P4 — Event Discovery
 
-Status: Not started
+Status: Completed
 
 Completed:
-- None
+- Task 7: Implement Event Discovery (`apps/api/src/modules/events/`)
+  - Schema validation (`event.schema.ts`): Added `eventQuerySchema` validating optional `search`, `category`, `from`, `to`, and `status` query parameters with ISO datetime coercion.
+  - Discovery Service (`event.service.ts`):
+    - `calculateAvailability`: Derived registration availability states (`OPEN`, `FULL`, `REGISTRATION_CLOSED`, `CANCELLED`, `COMPLETED`) based on event status, deadline, capacity, and active registrations.
+    - `getEventById`: Augmented detail payload with `activeRegistrationCount` and derived `availability`.
+    - `listEvents`: Implemented search across `title`, `description`, and `venue` (case-insensitive with Prisma `mode: 'insensitive'`), exact `category` match, and `from`/`to` timestamp filters on `startTime`.
+    - Visibility Guard: Automatically restricts catalog listing to `status: PUBLISHED` for student and unauthenticated public requests.
+  - Routes & Controller (`event.routes.ts`, `event.controller.ts`): Attached `validateRequest({ query: eventQuerySchema })` to `GET /api/events` and propagated parsed filters.
+  - Automated Integration Tests (`apps/api/tests/events/event-discovery.test.ts`): 17/17 tests passing covering:
+    - Published open, full, and closed events visible in public catalog
+    - Draft and cancelled events hidden from public and student catalogs
+    - Query parameter `status=DRAFT` or `status=CANCELLED` cannot bypass visibility rules for public/student
+    - Search across title, description, and venue (case-insensitive)
+    - Category filtering
+    - Date range filtering (`from`/`to`)
+    - 400 Bad Request on invalid date format
+    - Availability states derived correctly: `OPEN`, `FULL`, `REGISTRATION_CLOSED`, `CANCELLED`
+    - Active registration count attached to list items and detail view
+    - 404 Not Found for draft events accessed by unauthenticated/student users
+    - 404 Not Found for nonexistent event UUIDs
+    - 400 Bad Request for invalid UUID format
+  - Task Isolation: Zero modifications to auth implementation (Task 5), shared contracts, or database schema.
 
 ### P5 — Registration
 
-Status: Not started
+Status: Completed
 
 Completed:
-- None
+- Task: Implement Event Registration & Cancellation Workflows (`apps/api/src/modules/registrations/`)
+  - Registration Service (`registration.service.ts`):
+    - `register`: Enforces student role, event published state, deadline non-expiry, single active registration per student per event, and transactional capacity limits. Emits 201 Created with status `ACTIVE`.
+    - `cancel`: Allows students to withdraw active passes. Enforces ownership check, prevents cancelling already cancelled records, and preserves historical record with status `CANCELLED`.
+    - `getMyRegistrations`: Retrieves authenticated student's registrations with associated event details.
+  - Controller & Routes (`registration.controller.ts`, `registration.routes.ts`, `event.routes.ts`):
+    - `POST /api/events/:id/register`: Authenticated student registration endpoint.
+    - `POST /api/registrations/:id/cancel`: Authenticated student cancellation endpoint.
+    - `GET /api/registrations/me`: Authenticated student registrations roster.
+  - Automated Integration Tests (`apps/api/tests/registrations/registration.test.ts`): 12/12 tests passing covering registration, duplicate rejection, deadline rejection, role guard, capacity boundaries, self-cancellation, double cancellation prevention, non-owner denial, and re-registration after withdrawal.
 
 ### P6 — Frontend
 
-Status: Not started
+Status: In Progress
 
 Completed:
-- None
+- Public & Student Authentication (`apps/web/app/(auth)/login/page.tsx`): Form validation, error feedback, quick-fill demo cards for Student, Organizer, and Admin, and redirect preservation.
+- Account Registration UI (`apps/web/app/(auth)/register/page.tsx`): Campus pass creation form with role selection and institutional validation.
+- Student Registrations Management (`apps/web/app/(student)/registrations/page.tsx`): Full roster UI displaying active and withdrawn passes, event metadata, cancellation with confirmation, summary metric cards, and filter controls.
+- API Client Integration (`apps/web/lib/api.ts`, `apps/web/lib/auth.ts`): Authenticated request client with token storage and methods for auth, events, and registration endpoints.
 
 ### P7 — Participant APIs
 

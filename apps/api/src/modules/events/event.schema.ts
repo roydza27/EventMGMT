@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EventStatus } from './event.types.js';
 
 export const createEventSchema = z
   .object({
@@ -72,4 +73,12 @@ export const updateEventSchema = z
 
 export const eventIdParamSchema = z.object({
   id: z.string().uuid('Invalid event ID format'),
+});
+
+export const eventQuerySchema = z.object({
+  search: z.string().trim().optional(),
+  category: z.string().trim().optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+  status: z.nativeEnum(EventStatus).optional(),
 });
